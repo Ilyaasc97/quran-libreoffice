@@ -1,0 +1,19 @@
+# Python byte code
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Temporary and log files
+*.log
+debug.log
+*.tmp
+
+# Operating System files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE / Editor
+.idea/
+*.swp
+*~

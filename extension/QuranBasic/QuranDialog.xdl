@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dlg:window PUBLIC "-//OpenOffice.org//DTD OfficeDocument 1.0//EN" "dialog.dtd">
+<dlg:window xmlns:dlg="http://openoffice.org/2000/dialog" xmlns:script="http://openoffice.org/2000/script"
+            dlg:id="QuranDialog" dlg:left="60" dlg:top="40" dlg:width="440" dlg:height="330"
+            dlg:closeable="true" dlg:moveable="true" dlg:title="إدراج القرآن الكريم بالرسم العثماني">
+ <dlg:bulletinboard>
+
+  <!-- Title Header -->
+  <dlg:text dlg:id="lbl_title" dlg:left="10" dlg:top="6" dlg:width="420" dlg:height="16"
+            dlg:value="مصحف المدينة النبوية - مجمع الملك فهد لطباعة المصحف الشريف" dlg:align="center"/>
+
+  <!-- Section 1: Selection & Search Header -->
+  <dlg:text dlg:id="lbl_sec1" dlg:left="15" dlg:top="26" dlg:width="410" dlg:height="14"
+            dlg:value="اختيار السورة والآيات" dlg:align="right"/>
+  <dlg:fixedline dlg:id="sep1" dlg:left="15" dlg:top="40" dlg:width="410" dlg:height="2"/>
+
+  <!-- Row 1: Surah Selection (Right) & Search Prompt (Left) -->
+  <dlg:text dlg:id="lbl_surah" dlg:left="380" dlg:top="48" dlg:width="45" dlg:height="14"
+            dlg:value="السورة:" dlg:align="right"/>
+  <dlg:menulist dlg:id="lst_surah" dlg:left="200" dlg:top="46" dlg:width="175" dlg:height="16" dlg:spin="true"/>
+
+  <dlg:text dlg:id="lbl_search" dlg:left="15" dlg:top="48" dlg:width="170" dlg:height="14"
+            dlg:value="بحث سريع في الآيات:" dlg:align="right"/>
+
+  <!-- Row 2: Ayah Range (Right) & Search Inputs (Left) -->
+  <dlg:text dlg:id="lbl_from" dlg:left="380" dlg:top="70" dlg:width="45" dlg:height="14"
+            dlg:value="من آية:" dlg:align="right"/>
+  <dlg:numericfield dlg:id="num_from" dlg:left="315" dlg:top="68" dlg:width="60" dlg:height="16"
+                    dlg:spin="true" dlg:decimal-accuracy="0" dlg:value-min="1" dlg:value-max="286" dlg:value="1"/>
+
+  <dlg:text dlg:id="lbl_to" dlg:left="275" dlg:top="70" dlg:width="35" dlg:height="14"
+            dlg:value="إلى:" dlg:align="right"/>
+  <dlg:numericfield dlg:id="num_to" dlg:left="200" dlg:top="68" dlg:width="70" dlg:height="16"
+                    dlg:spin="true" dlg:decimal-accuracy="0" dlg:value-min="1" dlg:value-max="286" dlg:value="7"/>
+
+  <dlg:textfield dlg:id="txt_search" dlg:left="65" dlg:top="68" dlg:width="120" dlg:height="16" dlg:align="right"/>
+  <dlg:button dlg:id="btn_search" dlg:left="15" dlg:top="68" dlg:width="45" dlg:height="16" dlg:value="بحث"/>
+
+  <!-- Row 3: Search Results Dropdown -->
+  <dlg:menulist dlg:id="lst_search" dlg:left="15" dlg:top="90" dlg:width="410" dlg:height="16" dlg:spin="true"/>
+
+  <!-- Section 2: Formatting & Citation Options -->
+  <dlg:text dlg:id="lbl_sec2" dlg:left="15" dlg:top="114" dlg:width="410" dlg:height="14"
+            dlg:value="خيارات التنسيق والعزو والخط" dlg:align="right"/>
+  <dlg:fixedline dlg:id="sep2" dlg:left="15" dlg:top="128" dlg:width="410" dlg:height="2"/>
+
+  <!-- Row 4: Qala Taala, Reference Citation, and Ornate Brackets -->
+  <dlg:checkbox dlg:id="chk_qala" dlg:left="305" dlg:top="134" dlg:width="120" dlg:height="16"
+                dlg:value="إضافة «قَالَ تَعَالَى»" dlg:checked="true"/>
+  <dlg:checkbox dlg:id="chk_reference" dlg:left="160" dlg:top="134" dlg:width="135" dlg:height="16"
+                dlg:value="عزو الآيات [السورة: 1-4]" dlg:checked="true"/>
+  <dlg:checkbox dlg:id="chk_brackets" dlg:left="15" dlg:top="134" dlg:width="135" dlg:height="16"
+                dlg:value="أقواس المصحف المزخرفة" dlg:checked="true"/>
+
+  <!-- Row 5: Basmalah, Newline, and Optional Standalone Header -->
+  <dlg:checkbox dlg:id="chk_basmalah" dlg:left="320" dlg:top="154" dlg:width="105" dlg:height="16"
+                dlg:value="إدراج البسملة" dlg:checked="true"/>
+  <dlg:checkbox dlg:id="chk_newline" dlg:left="175" dlg:top="154" dlg:width="135" dlg:height="16"
+                dlg:value="كل آية في سطر مستقل" dlg:checked="false"/>
+  <dlg:checkbox dlg:id="chk_header" dlg:left="15" dlg:top="154" dlg:width="150" dlg:height="16"
+                dlg:value="سطر عنوان أعلى الآيات" dlg:checked="false"/>
+
+  <!-- Row 6: Font Size and Details -->
+  <dlg:text dlg:id="lbl_font" dlg:left="360" dlg:top="174" dlg:width="65" dlg:height="14"
+            dlg:value="حجم الخط:" dlg:align="right"/>
+  <dlg:numericfield dlg:id="num_fontsize" dlg:left="300" dlg:top="172" dlg:width="55" dlg:height="16"
+                    dlg:spin="true" dlg:decimal-accuracy="0" dlg:value="20" dlg:value-min="12" dlg:value-max="72"/>
+  <dlg:text dlg:id="lbl_finfo" dlg:left="15" dlg:top="174" dlg:width="275" dlg:height="14"
+            dlg:value="الخط: خط مجمع الملك فهد بالرسم العثماني" dlg:align="right"/>
+
+  <!-- Section 3: Live Preview -->
+  <dlg:text dlg:id="lbl_sec3" dlg:left="15" dlg:top="194" dlg:width="410" dlg:height="14"
+            dlg:value="معاينة النص القرآني" dlg:align="right"/>
+  <dlg:fixedline dlg:id="sep3" dlg:left="15" dlg:top="206" dlg:width="410" dlg:height="2"/>
+
+  <dlg:textfield dlg:id="txt_preview" dlg:left="15" dlg:top="212" dlg:width="410" dlg:height="74"
+                 dlg:align="right" dlg:multiline="true" dlg:vscroll="true"/>
+
+  <!-- Bottom Action Buttons -->
+  <dlg:button dlg:id="btn_insert" dlg:left="270" dlg:top="294" dlg:width="155" dlg:height="24"
+              dlg:value="إدراج في المستند" dlg:button-type="ok" dlg:default="true"/>
+  <dlg:button dlg:id="btn_cancel" dlg:left="15" dlg:top="294" dlg:width="80" dlg:height="24"
+              dlg:value="إلغاء" dlg:button-type="cancel"/>
+
+ </dlg:bulletinboard>
+</dlg:window>

@@ -1,0 +1,13 @@
+{
+  "python.defaultInterpreterPath": "C:\\Program Files\\LibreOffice\\program\\python.exe",
+  "python.analysis.extraPaths": [
+    "C:\\Program Files\\LibreOffice\\program",
+    "${workspaceFolder}/extension",
+    "${workspaceFolder}/extension/pythonpath"
+  ],
+  "python.autoComplete.extraPaths": [
+    "C:\\Program Files\\LibreOffice\\program",
+    "${workspaceFolder}/extension",
+    "${workspaceFolder}/extension/pythonpath"
+  ]
+}
