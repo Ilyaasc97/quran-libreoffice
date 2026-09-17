@@ -154,7 +154,7 @@ class QuranDialogRunner:
         items = []
         for r in results:
             snippet = r["aya_text_emlaey"][:35].replace("\n", " ")
-            items.append(f"{r['sura_no']:03d}:{r['aya_no']:03d} - {r['sura_name_ar']} - {snippet}...")
+            items.append(f"سورة {r['sura_name_ar']} [آية {r['aya_no']}] [{r['sura_no']:03d}:{r['aya_no']:03d}] - {snippet}...")
         lst_search.addItems(tuple(items), 0)
 
     def on_search_result_selected(self, event):
@@ -407,12 +407,26 @@ class QuranDialogRunner:
                 self.show_message("خطأ في الواجهة", err_msg)
                 return
 
+            # 2.5 Apply RTL WritingMode across dialog and all controls
+            try:
+                if hasattr(self.dialog.getModel(), "WritingMode"):
+                    self.dialog.getModel().setPropertyValue("WritingMode", 1)
+                for name in self.dialog.getModel().getElementNames():
+                    m = self.dialog.getModel().getByName(name)
+                    if hasattr(m, "WritingMode") or (hasattr(m, "hasPropertyByName") and m.hasPropertyByName("WritingMode")):
+                        try:
+                            m.setPropertyValue("WritingMode", 1)
+                        except Exception:
+                            pass
+            except Exception as e:
+                log_debug(f"WritingMode setup warning: {e}")
+
             # 3. Populate Surahs in lst_surah
             lst_surah = self.dialog.getControl("lst_surah")
             log_debug(f"lst_surah control: {lst_surah}")
             if lst_surah:
                 surah_titles = tuple(
-                    f"{s['sura_no']:03d} - سورة {s['sura_name_ar']} ({s['ayah_count']} آية)"
+                    f"سورة {s['sura_name_ar']} [{s['sura_no']:03d}] ({s['ayah_count']} آية)"
                     for s in self.surahs
                 )
                 lst_surah.addItems(surah_titles, 0)

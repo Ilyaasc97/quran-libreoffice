@@ -136,7 +136,7 @@ class QuranJob(unohelper.Base, XJob, XJobExecutor, XServiceInfo):
                 formatted = []
                 for r in results:
                     snippet = r["aya_text_emlaey"][:40].replace("\n", " ")
-                    line = f"{r['sura_no']:03d}:{r['aya_no']:03d} - سورة {r['sura_name_ar']} - {snippet}..."
+                    line = f"سورة {r['sura_name_ar']} [آية {r['aya_no']}] [{r['sura_no']:03d}:{r['aya_no']:03d}] - {snippet}..."
                     formatted.append(line)
                 log_debug(f"Found {len(formatted)} results")
                 return tuple(formatted)

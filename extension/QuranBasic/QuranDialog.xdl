@@ -5,82 +5,81 @@
             dlg:closeable="true" dlg:moveable="true" dlg:title="إدراج القرآن الكريم بالرسم العثماني">
  <dlg:bulletinboard>
 
-  <!-- Title Header -->
-  <dlg:text dlg:id="lbl_title" dlg:left="10" dlg:top="6" dlg:width="420" dlg:height="16"
+  <!-- Title Header Subtitle -->
+  <dlg:text dlg:id="lbl_title" dlg:left="10" dlg:top="6" dlg:width="420" dlg:height="14"
             dlg:value="مصحف المدينة النبوية - مجمع الملك فهد لطباعة المصحف الشريف" dlg:align="center"/>
 
-  <!-- Section 1: Selection & Search Header -->
-  <dlg:text dlg:id="lbl_sec1" dlg:left="15" dlg:top="26" dlg:width="410" dlg:height="14"
-            dlg:value="اختيار السورة والآيات" dlg:align="right"/>
-  <dlg:fixedline dlg:id="sep1" dlg:left="15" dlg:top="40" dlg:width="410" dlg:height="2"/>
+  <!-- Section 1: Surah Selection & Search -->
+  <dlg:text dlg:id="lbl_sec1" dlg:left="15" dlg:top="24" dlg:width="410" dlg:height="14"
+            dlg:value="اختيار السورة والآيات والبحث" dlg:align="right"/>
+  <dlg:fixedline dlg:id="sep1" dlg:left="15" dlg:top="38" dlg:width="410" dlg:height="2"/>
 
   <!-- Row 1: Surah Selection (Right) & Search Prompt (Left) -->
-  <dlg:text dlg:id="lbl_surah" dlg:left="380" dlg:top="48" dlg:width="45" dlg:height="14"
-            dlg:value="السورة:" dlg:align="right"/>
-  <dlg:menulist dlg:id="lst_surah" dlg:left="200" dlg:top="46" dlg:width="175" dlg:height="16" dlg:spin="true"/>
+  <dlg:text dlg:id="lbl_surah" dlg:left="370" dlg:top="46" dlg:width="50" dlg:height="14"
+            dlg:value="السورة" dlg:align="right"/>
+  <dlg:menulist dlg:id="lst_surah" dlg:tab-index="0" dlg:left="220" dlg:top="44" dlg:width="150" dlg:height="16" dlg:spin="true"/>
 
-  <dlg:text dlg:id="lbl_search" dlg:left="15" dlg:top="48" dlg:width="170" dlg:height="14"
-            dlg:value="بحث سريع في الآيات:" dlg:align="right"/>
+  <dlg:text dlg:id="lbl_search" dlg:left="150" dlg:top="46" dlg:width="65" dlg:height="14"
+            dlg:value="بحث بالآية" dlg:align="right"/>
+  <dlg:textfield dlg:id="txt_search" dlg:tab-index="3" dlg:left="68" dlg:top="44" dlg:width="80" dlg:height="16" dlg:align="right"/>
+  <dlg:button dlg:id="btn_search" dlg:tab-index="4" dlg:left="15" dlg:top="44" dlg:width="48" dlg:height="16" dlg:value="بحث"/>
 
-  <!-- Row 2: Ayah Range (Right) & Search Inputs (Left) -->
-  <dlg:text dlg:id="lbl_from" dlg:left="380" dlg:top="70" dlg:width="45" dlg:height="14"
-            dlg:value="من آية:" dlg:align="right"/>
-  <dlg:numericfield dlg:id="num_from" dlg:left="315" dlg:top="68" dlg:width="60" dlg:height="16"
+  <!-- Row 2: Ayah Range -->
+  <dlg:text dlg:id="lbl_from" dlg:left="370" dlg:top="68" dlg:width="50" dlg:height="14"
+            dlg:value="من آية" dlg:align="right"/>
+  <dlg:numericfield dlg:id="num_from" dlg:tab-index="1" dlg:left="310" dlg:top="66" dlg:width="60" dlg:height="16"
                     dlg:spin="true" dlg:decimal-accuracy="0" dlg:value-min="1" dlg:value-max="286" dlg:value="1"/>
 
-  <dlg:text dlg:id="lbl_to" dlg:left="275" dlg:top="70" dlg:width="35" dlg:height="14"
-            dlg:value="إلى:" dlg:align="right"/>
-  <dlg:numericfield dlg:id="num_to" dlg:left="200" dlg:top="68" dlg:width="70" dlg:height="16"
+  <dlg:text dlg:id="lbl_to" dlg:left="265" dlg:top="68" dlg:width="40" dlg:height="14"
+            dlg:value="إلى آية" dlg:align="right"/>
+  <dlg:numericfield dlg:id="num_to" dlg:tab-index="2" dlg:left="220" dlg:top="66" dlg:width="45" dlg:height="16"
                     dlg:spin="true" dlg:decimal-accuracy="0" dlg:value-min="1" dlg:value-max="286" dlg:value="7"/>
 
-  <dlg:textfield dlg:id="txt_search" dlg:left="65" dlg:top="68" dlg:width="120" dlg:height="16" dlg:align="right"/>
-  <dlg:button dlg:id="btn_search" dlg:left="15" dlg:top="68" dlg:width="45" dlg:height="16" dlg:value="بحث"/>
-
   <!-- Row 3: Search Results Dropdown -->
-  <dlg:menulist dlg:id="lst_search" dlg:left="15" dlg:top="90" dlg:width="410" dlg:height="16" dlg:spin="true"/>
+  <dlg:menulist dlg:id="lst_search" dlg:tab-index="5" dlg:left="15" dlg:top="88" dlg:width="410" dlg:height="16" dlg:spin="true"/>
 
-  <!-- Section 2: Formatting & Citation Options -->
-  <dlg:text dlg:id="lbl_sec2" dlg:left="15" dlg:top="114" dlg:width="410" dlg:height="14"
+  <!-- Section 2: Formatting, Academic Citation & Font -->
+  <dlg:text dlg:id="lbl_sec2" dlg:left="15" dlg:top="110" dlg:width="410" dlg:height="14"
             dlg:value="خيارات التنسيق والعزو والخط" dlg:align="right"/>
-  <dlg:fixedline dlg:id="sep2" dlg:left="15" dlg:top="128" dlg:width="410" dlg:height="2"/>
+  <dlg:fixedline dlg:id="sep2" dlg:left="15" dlg:top="124" dlg:width="410" dlg:height="2"/>
 
   <!-- Row 4: Qala Taala, Reference Citation, and Ornate Brackets -->
-  <dlg:checkbox dlg:id="chk_qala" dlg:left="305" dlg:top="134" dlg:width="120" dlg:height="16"
-                dlg:value="إضافة «قَالَ تَعَالَى»" dlg:checked="true"/>
-  <dlg:checkbox dlg:id="chk_reference" dlg:left="160" dlg:top="134" dlg:width="135" dlg:height="16"
-                dlg:value="عزو الآيات [السورة: 1-4]" dlg:checked="true"/>
-  <dlg:checkbox dlg:id="chk_brackets" dlg:left="15" dlg:top="134" dlg:width="135" dlg:height="16"
+  <dlg:checkbox dlg:id="chk_qala" dlg:tab-index="6" dlg:left="290" dlg:top="132" dlg:width="135" dlg:height="16"
+                dlg:value="إضافة «قَالَ تَعَالَى:»" dlg:checked="true"/>
+  <dlg:checkbox dlg:id="chk_reference" dlg:tab-index="7" dlg:left="145" dlg:top="132" dlg:width="140" dlg:height="16"
+                dlg:value="عزو وتوثيق السورة والآيات" dlg:checked="true"/>
+  <dlg:checkbox dlg:id="chk_brackets" dlg:tab-index="8" dlg:left="15" dlg:top="132" dlg:width="125" dlg:height="16"
                 dlg:value="أقواس المصحف المزخرفة" dlg:checked="true"/>
 
-  <!-- Row 5: Basmalah, Newline, and Optional Standalone Header -->
-  <dlg:checkbox dlg:id="chk_basmalah" dlg:left="320" dlg:top="154" dlg:width="105" dlg:height="16"
-                dlg:value="إدراج البسملة" dlg:checked="true"/>
-  <dlg:checkbox dlg:id="chk_newline" dlg:left="175" dlg:top="154" dlg:width="135" dlg:height="16"
+  <!-- Row 5: Basmalah, Newline, and Standalone Header -->
+  <dlg:checkbox dlg:id="chk_basmalah" dlg:tab-index="9" dlg:left="290" dlg:top="152" dlg:width="135" dlg:height="16"
+                dlg:value="إدراج البسملة الشريفة" dlg:checked="true"/>
+  <dlg:checkbox dlg:id="chk_newline" dlg:tab-index="10" dlg:left="145" dlg:top="152" dlg:width="140" dlg:height="16"
                 dlg:value="كل آية في سطر مستقل" dlg:checked="false"/>
-  <dlg:checkbox dlg:id="chk_header" dlg:left="15" dlg:top="154" dlg:width="150" dlg:height="16"
+  <dlg:checkbox dlg:id="chk_header" dlg:tab-index="11" dlg:left="15" dlg:top="152" dlg:width="125" dlg:height="16"
                 dlg:value="سطر عنوان أعلى الآيات" dlg:checked="false"/>
 
-  <!-- Row 6: Font Size and Details -->
-  <dlg:text dlg:id="lbl_font" dlg:left="360" dlg:top="174" dlg:width="65" dlg:height="14"
-            dlg:value="حجم الخط:" dlg:align="right"/>
-  <dlg:numericfield dlg:id="num_fontsize" dlg:left="300" dlg:top="172" dlg:width="55" dlg:height="16"
+  <!-- Row 6: Font Size & Font Info -->
+  <dlg:text dlg:id="lbl_font" dlg:left="360" dlg:top="174" dlg:width="60" dlg:height="14"
+            dlg:value="حجم الخط" dlg:align="right"/>
+  <dlg:numericfield dlg:id="num_fontsize" dlg:tab-index="12" dlg:left="300" dlg:top="172" dlg:width="55" dlg:height="16"
                     dlg:spin="true" dlg:decimal-accuracy="0" dlg:value="20" dlg:value-min="12" dlg:value-max="72"/>
-  <dlg:text dlg:id="lbl_finfo" dlg:left="15" dlg:top="174" dlg:width="275" dlg:height="14"
-            dlg:value="الخط: خط مجمع الملك فهد بالرسم العثماني" dlg:align="right"/>
+  <dlg:text dlg:id="lbl_finfo" dlg:left="15" dlg:top="174" dlg:width="280" dlg:height="14"
+            dlg:value="الخط المعتمد: خط مجمع الملك فهد بالرسم العثماني" dlg:align="right"/>
 
-  <!-- Section 3: Live Preview -->
-  <dlg:text dlg:id="lbl_sec3" dlg:left="15" dlg:top="194" dlg:width="410" dlg:height="14"
-            dlg:value="معاينة النص القرآني" dlg:align="right"/>
+  <!-- Section 3: Live Quran Preview -->
+  <dlg:text dlg:id="lbl_sec3" dlg:left="15" dlg:top="192" dlg:width="410" dlg:height="14"
+            dlg:value="معاينة النص القرآني بالرسم العثماني" dlg:align="right"/>
   <dlg:fixedline dlg:id="sep3" dlg:left="15" dlg:top="206" dlg:width="410" dlg:height="2"/>
 
-  <dlg:textfield dlg:id="txt_preview" dlg:left="15" dlg:top="212" dlg:width="410" dlg:height="74"
+  <dlg:textfield dlg:id="txt_preview" dlg:tab-index="13" dlg:left="15" dlg:top="212" dlg:width="410" dlg:height="74"
                  dlg:align="right" dlg:multiline="true" dlg:vscroll="true"/>
 
-  <!-- Bottom Action Buttons -->
-  <dlg:button dlg:id="btn_insert" dlg:left="270" dlg:top="294" dlg:width="155" dlg:height="24"
-              dlg:value="إدراج في المستند" dlg:button-type="ok" dlg:default="true"/>
-  <dlg:button dlg:id="btn_cancel" dlg:left="15" dlg:top="294" dlg:width="80" dlg:height="24"
-              dlg:value="إلغاء" dlg:button-type="cancel"/>
+  <!-- Bottom Action Buttons (Enter / Esc) -->
+  <dlg:button dlg:id="btn_insert" dlg:tab-index="14" dlg:left="255" dlg:top="294" dlg:width="170" dlg:height="26"
+              dlg:value="إدراج في المستند (Enter)" dlg:button-type="ok" dlg:default="true"/>
+  <dlg:button dlg:id="btn_cancel" dlg:tab-index="15" dlg:left="15" dlg:top="294" dlg:width="85" dlg:height="26"
+              dlg:value="إلغاء (Esc)" dlg:button-type="cancel"/>
 
  </dlg:bulletinboard>
 </dlg:window>

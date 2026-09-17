@@ -71,14 +71,37 @@ Sub InsertQuran
     oDialog.getControl("num_from").getModel().ValueMax = 7
     oDialog.getControl("num_to").getModel().ValueMax = 7
 
-    ' Set preview font if available and right alignment + RTL writing mode
+    ' Set RTL writing mode and font on all controls
     On Error Resume Next
-    oDialog.getControl("txt_preview").getModel().FontName = "KFGQPC_HAFS_Uthmanic_Script_H"
-    oDialog.getControl("txt_preview").getModel().FontHeight = 14
-    oDialog.getControl("txt_preview").getModel().Align = 2
-    oDialog.getControl("txt_preview").getModel().WritingMode = 1
-    oDialog.getControl("txt_search").getModel().Align = 2
-    oDialog.getControl("txt_search").getModel().WritingMode = 1
+    If oDialog.getModel().hasPropertyByName("WritingMode") Then
+        oDialog.getModel().WritingMode = 1
+    End If
+    Dim aCtrlNames() As String
+    aCtrlNames = oDialog.getModel().getElementNames()
+    Dim k As Long, oCtrlMdl As Object
+    For k = LBound(aCtrlNames) To UBound(aCtrlNames)
+        oCtrlMdl = oDialog.getModel().getByName(aCtrlNames(k))
+        If oCtrlMdl.hasPropertyByName("WritingMode") Then
+            oCtrlMdl.WritingMode = 1
+        End If
+    Next k
+
+    ' Preview Box Font &amp; Right-to-Left alignment
+    With oDialog.getControl("txt_preview").getModel()
+        .FontName = "KFGQPC_HAFS_Uthmanic_Script_H"
+        .FontHeight = 14
+        .Align = 2
+        .WritingMode = 1
+    End With
+
+    ' Search Box RTL alignment
+    With oDialog.getControl("txt_search").getModel()
+        .Align = 2
+        .WritingMode = 1
+    End With
+
+    ' Set DefaultButton on btn_insert
+    oDialog.getControl("btn_insert").getModel().DefaultButton = True
     On Error GoTo ErrHandler
 
     ' Attach Listeners
@@ -147,7 +170,7 @@ Sub SurahEvt_itemStateChanged(oEvt As Object)
     oTo.getModel().ValueMax = CDbl(maxAyah)
     Dim defTo As Long
     defTo = maxAyah
-    If defTo > 5 Then defTo = 5
+    If defTo &gt; 5 Then defTo = 5
     oFrom.setValue(1)
     oTo.setValue(defTo)
     g_from_ayah = 1
@@ -222,29 +245,58 @@ Sub SelectSearchResult()
     selText = oLstSearch.getSelectedItem()
     If Len(selText) = 0 Or Left(selText, 2) = "لم" Then Exit Sub
 
-    Dim parts() As String
-    parts = Split(selText, " - ")
-    If UBound(parts) &gt;= 0 Then
-        Dim subp() As String
-        subp = Split(parts(0), ":")
-        If UBound(subp) &gt;= 1 Then
-            Dim sNo As Integer, aNo As Long
-            sNo = CInt(subp(0))
-            aNo = CLng(subp(1))
-            If sNo &gt;= 1 And sNo &lt;= 114 Then
-                g_sura_no = sNo
-                oDialog.getControl("lst_surah").selectItemPos(sNo - 1, True)
-                Dim maxAyah As Long
-                maxAyah = aSurahCounts(sNo)
-                oDialog.getControl("num_from").getModel().ValueMax = CDbl(maxAyah)
-                oDialog.getControl("num_to").getModel().ValueMax = CDbl(maxAyah)
-                oDialog.getControl("num_from").setValue(aNo)
-                oDialog.getControl("num_to").setValue(aNo)
-                g_from_ayah = aNo
-                g_to_ayah = aNo
-                UpdatePreview()
+    Dim sNo As Integer, aNo As Long
+    sNo = 0
+    aNo = 0
+
+    ' 1. Try finding [001:002] bracket tag anywhere in the string
+    Dim p1 As Integer, p2 As Integer
+    p1 = InStr(selText, "[")
+    While p1 &gt; 0 And sNo = 0
+        p2 = InStr(p1 + 1, selText, "]")
+        If p2 &gt; p1 Then
+            Dim tag As String
+            tag = Mid(selText, p1 + 1, p2 - p1 - 1)
+            If InStr(tag, ":") &gt; 0 Then
+                Dim subp() As String
+                subp = Split(tag, ":")
+                If UBound(subp) &gt;= 1 Then
+                    sNo = CInt(subp(0))
+                    aNo = CLng(subp(1))
+                End If
+            End If
+            p1 = InStr(p2 + 1, selText, "[")
+        Else
+            p1 = 0
+        End If
+    Wend
+
+    ' 2. Fallback to old format: 001:002 - ...
+    If sNo = 0 Then
+        Dim parts() As String
+        parts = Split(selText, " - ")
+        If UBound(parts) &gt;= 0 Then
+            Dim subp2() As String
+            subp2 = Split(parts(0), ":")
+            If UBound(subp2) &gt;= 1 Then
+                sNo = CInt(subp2(0))
+                aNo = CLng(subp2(1))
             End If
         End If
+    End If
+
+    If sNo &gt;= 1 And sNo &lt;= 114 Then
+        g_sura_no = sNo
+        oDialog.getControl("lst_surah").selectItemPos(sNo - 1, True)
+        Dim maxAyah As Long
+        maxAyah = aSurahCounts(sNo)
+        oDialog.getControl("num_from").getModel().ValueMax = CDbl(maxAyah)
+        oDialog.getControl("num_to").getModel().ValueMax = CDbl(maxAyah)
+        oDialog.getControl("num_from").setValue(aNo)
+        oDialog.getControl("num_to").setValue(aNo)
+        g_from_ayah = aNo
+        g_to_ayah = aNo
+        UpdatePreview()
     End If
 End Sub
 
@@ -393,120 +445,120 @@ Sub ShowAbout()
 End Sub
 
 Sub PopulateSurahNames(ByRef aNames() As String)
-    aNames(0) = "001 - سورة الفَاتِحة (7 آية)"
-    aNames(1) = "002 - سورة البَقَرَة (286 آية)"
-    aNames(2) = "003 - سورة آل عِمران (200 آية)"
-    aNames(3) = "004 - سورة النِّسَاء (176 آية)"
-    aNames(4) = "005 - سورة المَائدة (120 آية)"
-    aNames(5) = "006 - سورة الأنعَام (165 آية)"
-    aNames(6) = "007 - سورة الأعرَاف (206 آية)"
-    aNames(7) = "008 - سورة الأنفَال (75 آية)"
-    aNames(8) = "009 - سورة التوبَة (129 آية)"
-    aNames(9) = "010 - سورة يُونس (109 آية)"
-    aNames(10) = "011 - سورة هُود (123 آية)"
-    aNames(11) = "012 - سورة يُوسُف (111 آية)"
-    aNames(12) = "013 - سورة الرَّعد (43 آية)"
-    aNames(13) = "014 - سورة إبراهِيم (52 آية)"
-    aNames(14) = "015 - سورة الحِجر (99 آية)"
-    aNames(15) = "016 - سورة النَّحل (128 آية)"
-    aNames(16) = "017 - سورة الإسرَاء (111 آية)"
-    aNames(17) = "018 - سورة الكَهف (110 آية)"
-    aNames(18) = "019 - سورة مَريَم (98 آية)"
-    aNames(19) = "020 - سورة طه (135 آية)"
-    aNames(20) = "021 - سورة الأنبيَاء (112 آية)"
-    aNames(21) = "022 - سورة الحج (78 آية)"
-    aNames(22) = "023 - سورة المؤمنُون (118 آية)"
-    aNames(23) = "024 - سورة النور (64 آية)"
-    aNames(24) = "025 - سورة الفُرقَان (77 آية)"
-    aNames(25) = "026 - سورة الشعراء (227 آية)"
-    aNames(26) = "027 - سورة النَّمل (93 آية)"
-    aNames(27) = "028 - سورة القَصَص (88 آية)"
-    aNames(28) = "029 - سورة العَنكبُوت (69 آية)"
-    aNames(29) = "030 - سورة الرُّوم (60 آية)"
-    aNames(30) = "031 - سورة لُقمَان (34 آية)"
-    aNames(31) = "032 - سورة السَّجدة (30 آية)"
-    aNames(32) = "033 - سورة الأحزَاب (73 آية)"
-    aNames(33) = "034 - سورة سَبإ (54 آية)"
-    aNames(34) = "035 - سورة فَاطِر (45 آية)"
-    aNames(35) = "036 - سورة يسٓ (83 آية)"
-    aNames(36) = "037 - سورة الصَّافَات (182 آية)"
-    aNames(37) = "038 - سورة صٓ (88 آية)"
-    aNames(38) = "039 - سورة الزُّمَر (75 آية)"
-    aNames(39) = "040 - سورة غَافِر (85 آية)"
-    aNames(40) = "041 - سورة فُصِّلَت (54 آية)"
-    aNames(41) = "042 - سورة الشُّوري (53 آية)"
-    aNames(42) = "043 - سورة الزُّخرُف (89 آية)"
-    aNames(43) = "044 - سورة الدُّخان (59 آية)"
-    aNames(44) = "045 - سورة الجاثِية (37 آية)"
-    aNames(45) = "046 - سورة الأحقَاف (35 آية)"
-    aNames(46) = "047 - سورة مُحمد (38 آية)"
-    aNames(47) = "048 - سورة الفَتح (29 آية)"
-    aNames(48) = "049 - سورة الحُجُرَات (18 آية)"
-    aNames(49) = "050 - سورة قٓ (45 آية)"
-    aNames(50) = "051 - سورة الذَّاريَات (60 آية)"
-    aNames(51) = "052 - سورة الطُّور (49 آية)"
-    aNames(52) = "053 - سورة النَّجم (62 آية)"
-    aNames(53) = "054 - سورة القَمَر (55 آية)"
-    aNames(54) = "055 - سورة الرَّحمٰن (78 آية)"
-    aNames(55) = "056 - سورة الوَاقِعة (96 آية)"
-    aNames(56) = "057 - سورة الحدِيد (29 آية)"
-    aNames(57) = "058 - سورة المُجَادلة (22 آية)"
-    aNames(58) = "059 - سورة الحَشر (24 آية)"
-    aNames(59) = "060 - سورة المُمتَحنَة (13 آية)"
-    aNames(60) = "061 - سورة الصَّف (14 آية)"
-    aNames(61) = "062 - سورة الجُمعَة (11 آية)"
-    aNames(62) = "063 - سورة المُنَافِقُونَ (11 آية)"
-    aNames(63) = "064 - سورة التغَابُن (18 آية)"
-    aNames(64) = "065 - سورة الطَّلَاق (12 آية)"
-    aNames(65) = "066 - سورة التَّحرِيم (12 آية)"
-    aNames(66) = "067 - سورة المُلك (30 آية)"
-    aNames(67) = "068 - سورة القَلَم (52 آية)"
-    aNames(68) = "069 - سورة الحَاقة (52 آية)"
-    aNames(69) = "070 - سورة المَعَارج (44 آية)"
-    aNames(70) = "071 - سورة نُوح (28 آية)"
-    aNames(71) = "072 - سورة الجِن (28 آية)"
-    aNames(72) = "073 - سورة المُزمل (20 آية)"
-    aNames(73) = "074 - سورة المُدثر (56 آية)"
-    aNames(74) = "075 - سورة القِيَامة (40 آية)"
-    aNames(75) = "076 - سورة الإنسَان (31 آية)"
-    aNames(76) = "077 - سورة المُرسَلات (50 آية)"
-    aNames(77) = "078 - سورة النَّبَإ (40 آية)"
-    aNames(78) = "079 - سورة النَّازعَات (46 آية)"
-    aNames(79) = "080 - سورة عَبَسَ (42 آية)"
-    aNames(80) = "081 - سورة التَّكوير (29 آية)"
-    aNames(81) = "082 - سورة الانفِطَار (19 آية)"
-    aNames(82) = "083 - سورة المُطَففين (36 آية)"
-    aNames(83) = "084 - سورة الانشِقَاق (25 آية)"
-    aNames(84) = "085 - سورة البُرُوج (22 آية)"
-    aNames(85) = "086 - سورة الطَّارق (17 آية)"
-    aNames(86) = "087 - سورة الأعلى (19 آية)"
-    aNames(87) = "088 - سورة الغَاشِية (26 آية)"
-    aNames(88) = "089 - سورة الفَجر (30 آية)"
-    aNames(89) = "090 - سورة البَلَد (20 آية)"
-    aNames(90) = "091 - سورة الشَّمس (15 آية)"
-    aNames(91) = "092 - سورة اللَّيل (21 آية)"
-    aNames(92) = "093 - سورة الضُّحى (11 آية)"
-    aNames(93) = "094 - سورة الشَّرح (8 آية)"
-    aNames(94) = "095 - سورة التِّين (8 آية)"
-    aNames(95) = "096 - سورة العَلَق (19 آية)"
-    aNames(96) = "097 - سورة القَدر (5 آية)"
-    aNames(97) = "098 - سورة البَينَة (8 آية)"
-    aNames(98) = "099 - سورة الزَّلزَلة (8 آية)"
-    aNames(99) = "100 - سورة العَاديَات (11 آية)"
-    aNames(100) = "101 - سورة القَارعَة (11 آية)"
-    aNames(101) = "102 - سورة التَّكاثُر (8 آية)"
-    aNames(102) = "103 - سورة العَصر (3 آية)"
-    aNames(103) = "104 - سورة الهُمَزة (9 آية)"
-    aNames(104) = "105 - سورة الفِيل (5 آية)"
-    aNames(105) = "106 - سورة قُرَيش (4 آية)"
-    aNames(106) = "107 - سورة المَاعُون (7 آية)"
-    aNames(107) = "108 - سورة الكَوثر (3 آية)"
-    aNames(108) = "109 - سورة الكافِرون (6 آية)"
-    aNames(109) = "110 - سورة النَّصر (3 آية)"
-    aNames(110) = "111 - سورة المَسَد (5 آية)"
-    aNames(111) = "112 - سورة الإخلَاص (4 آية)"
-    aNames(112) = "113 - سورة الفَلَق (5 آية)"
-    aNames(113) = "114 - سورة النَّاس (6 آية)"
+    aNames(0) = "سورة الفَاتِحة [001] (7 آيات)"
+    aNames(1) = "سورة البَقَرَة [002] (286 آية)"
+    aNames(2) = "سورة آل عِمران [003] (200 آية)"
+    aNames(3) = "سورة النِّسَاء [004] (176 آية)"
+    aNames(4) = "سورة المَائدة [005] (120 آية)"
+    aNames(5) = "سورة الأنعَام [006] (165 آية)"
+    aNames(6) = "سورة الأعرَاف [007] (206 آية)"
+    aNames(7) = "سورة الأنفَال [008] (75 آية)"
+    aNames(8) = "سورة التوبَة [009] (129 آية)"
+    aNames(9) = "سورة يُونس [010] (109 آية)"
+    aNames(10) = "سورة هُود [011] (123 آية)"
+    aNames(11) = "سورة يُوسُف [012] (111 آية)"
+    aNames(12) = "سورة الرَّعد [013] (43 آية)"
+    aNames(13) = "سورة إبراهِيم [014] (52 آية)"
+    aNames(14) = "سورة الحِجر [015] (99 آية)"
+    aNames(15) = "سورة النَّحل [016] (128 آية)"
+    aNames(16) = "سورة الإسرَاء [017] (111 آية)"
+    aNames(17) = "سورة الكَهف [018] (110 آية)"
+    aNames(18) = "سورة مَريَم [019] (98 آية)"
+    aNames(19) = "سورة طه [020] (135 آية)"
+    aNames(20) = "سورة الأنبيَاء [021] (112 آية)"
+    aNames(21) = "سورة الحج [022] (78 آية)"
+    aNames(22) = "سورة المؤمنُون [023] (118 آية)"
+    aNames(23) = "سورة النور [024] (64 آية)"
+    aNames(24) = "سورة الفُرقَان [025] (77 آية)"
+    aNames(25) = "سورة الشعراء [026] (227 آية)"
+    aNames(26) = "سورة النَّمل [027] (93 آية)"
+    aNames(27) = "سورة القَصَص [028] (88 آية)"
+    aNames(28) = "سورة العَنكبُوت [029] (69 آية)"
+    aNames(29) = "سورة الرُّوم [030] (60 آية)"
+    aNames(30) = "سورة لُقمَان [031] (34 آية)"
+    aNames(31) = "سورة السَّجدة [032] (30 آية)"
+    aNames(32) = "سورة الأحزَاب [033] (73 آية)"
+    aNames(33) = "سورة سَبإ [034] (54 آية)"
+    aNames(34) = "سورة فَاطِر [035] (45 آية)"
+    aNames(35) = "سورة يسٓ [036] (83 آية)"
+    aNames(36) = "سورة الصَّافَات [037] (182 آية)"
+    aNames(37) = "سورة صٓ [038] (88 آية)"
+    aNames(38) = "سورة الزُّمَر [039] (75 آية)"
+    aNames(39) = "سورة غَافِر [040] (85 آية)"
+    aNames(40) = "سورة فُصِّلَت [041] (54 آية)"
+    aNames(41) = "سورة الشُّوري [042] (53 آية)"
+    aNames(42) = "سورة الزُّخرُف [043] (89 آية)"
+    aNames(43) = "سورة الدُّخان [044] (59 آية)"
+    aNames(44) = "سورة الجاثِية [045] (37 آية)"
+    aNames(45) = "سورة الأحقَاف [046] (35 آية)"
+    aNames(46) = "سورة مُحمد [047] (38 آية)"
+    aNames(47) = "سورة الفَتح [048] (29 آية)"
+    aNames(48) = "سورة الحُجُرَات [049] (18 آية)"
+    aNames(49) = "سورة قٓ [050] (45 آية)"
+    aNames(50) = "سورة الذَّاريَات [051] (60 آية)"
+    aNames(51) = "سورة الطُّور [052] (49 آية)"
+    aNames(52) = "سورة النَّجم [053] (62 آية)"
+    aNames(53) = "سورة القَمَر [054] (55 آية)"
+    aNames(54) = "سورة الرَّحمٰن [055] (78 آية)"
+    aNames(55) = "سورة الوَاقِعة [056] (96 آية)"
+    aNames(56) = "سورة الحدِيد [057] (29 آية)"
+    aNames(57) = "سورة المُجَادلة [058] (22 آية)"
+    aNames(58) = "سورة الحَشر [059] (24 آية)"
+    aNames(59) = "سورة المُمتَحنَة [060] (13 آية)"
+    aNames(60) = "سورة الصَّف [061] (14 آية)"
+    aNames(61) = "سورة الجُمعَة [062] (11 آية)"
+    aNames(62) = "سورة المُنَافِقُونَ [063] (11 آية)"
+    aNames(63) = "سورة التغَابُن [064] (18 آية)"
+    aNames(64) = "سورة الطَّلَاق [065] (12 آية)"
+    aNames(65) = "سورة التَّحرِيم [066] (12 آية)"
+    aNames(66) = "سورة المُلك [067] (30 آية)"
+    aNames(67) = "سورة القَلَم [068] (52 آية)"
+    aNames(68) = "سورة الحَاقة [069] (52 آية)"
+    aNames(69) = "سورة المَعَارج [070] (44 آية)"
+    aNames(70) = "سورة نُوح [071] (28 آية)"
+    aNames(71) = "سورة الجِن [072] (28 آية)"
+    aNames(72) = "سورة المُزمل [073] (20 آية)"
+    aNames(73) = "سورة المُدثر [074] (56 آية)"
+    aNames(74) = "سورة القِيَامة [075] (40 آية)"
+    aNames(75) = "سورة الإنسَان [076] (31 آية)"
+    aNames(76) = "سورة المُرسَلات [077] (50 آية)"
+    aNames(77) = "سورة النَّبَإ [078] (40 آية)"
+    aNames(78) = "سورة النَّازعَات [079] (46 آية)"
+    aNames(79) = "سورة عَبَسَ [080] (42 آية)"
+    aNames(80) = "سورة التَّكوير [081] (29 آية)"
+    aNames(81) = "سورة الانفِطَار [082] (19 آية)"
+    aNames(82) = "سورة المُطَففين [083] (36 آية)"
+    aNames(83) = "سورة الانشِقَاق [084] (25 آية)"
+    aNames(84) = "سورة البُرُوج [085] (22 آية)"
+    aNames(85) = "سورة الطَّارق [086] (17 آية)"
+    aNames(86) = "سورة الأعلى [087] (19 آية)"
+    aNames(87) = "سورة الغَاشِية [088] (26 آية)"
+    aNames(88) = "سورة الفَجر [089] (30 آية)"
+    aNames(89) = "سورة البَلَد [090] (20 آية)"
+    aNames(90) = "سورة الشَّمس [091] (15 آية)"
+    aNames(91) = "سورة اللَّيل [092] (21 آية)"
+    aNames(92) = "سورة الضُّحى [093] (11 آية)"
+    aNames(93) = "سورة الشَّرح [094] (8 آيات)"
+    aNames(94) = "سورة التِّين [095] (8 آيات)"
+    aNames(95) = "سورة العَلَق [096] (19 آية)"
+    aNames(96) = "سورة القَدر [097] (5 آيات)"
+    aNames(97) = "سورة البَينَة [098] (8 آيات)"
+    aNames(98) = "سورة الزَّلزَلة [099] (8 آيات)"
+    aNames(99) = "سورة العَاديَات [100] (11 آية)"
+    aNames(100) = "سورة القَارعَة [101] (11 آية)"
+    aNames(101) = "سورة التَّكاثُر [102] (8 آيات)"
+    aNames(102) = "سورة العَصر [103] (3 آيات)"
+    aNames(103) = "سورة الهُمَزة [104] (9 آيات)"
+    aNames(104) = "سورة الفِيل [105] (5 آيات)"
+    aNames(105) = "سورة قُرَيش [106] (4 آيات)"
+    aNames(106) = "سورة المَاعُون [107] (7 آيات)"
+    aNames(107) = "سورة الكَوثر [108] (3 آيات)"
+    aNames(108) = "سورة الكافِرون [109] (6 آيات)"
+    aNames(109) = "سورة النَّصر [110] (3 آيات)"
+    aNames(110) = "سورة المَسَد [111] (5 آيات)"
+    aNames(111) = "سورة الإخلَاص [112] (4 آيات)"
+    aNames(112) = "سورة الفَلَق [113] (5 آيات)"
+    aNames(113) = "سورة النَّاس [114] (6 آيات)"
 End Sub
 
 Sub InitSurahCounts()

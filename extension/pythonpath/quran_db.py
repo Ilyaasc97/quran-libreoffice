@@ -118,13 +118,17 @@ class QuranDB:
         if not ayahs:
             return None
 
+        def to_arabic_indic(n):
+            indic = "٠١٢٣٤٥٦٧٨٩"
+            return "".join(indic[int(d)] for d in str(n))
+
         # Standalone Header if requested
         header_text = None
         if include_header:
             if from_ayah == to_ayah:
-                header_text = f"سُورَةُ {surah['sura_name_ar']} - الآية {from_ayah}"
+                header_text = f"سُورَةُ {surah['sura_name_ar']} - الآية {to_arabic_indic(from_ayah)}"
             else:
-                header_text = f"سُورَةُ {surah['sura_name_ar']} - الآيات {from_ayah} إلى {to_ayah}"
+                header_text = f"سُورَةُ {surah['sura_name_ar']} - الآيات {to_arabic_indic(from_ayah)} إلى {to_arabic_indic(to_ayah)}"
 
         # Basmalah if requested
         basmalah_text = None
@@ -134,15 +138,17 @@ class QuranDB:
         # Qala Taala prefix
         qala_text = "قَالَ تَعَالَى:" if include_qala else None
 
-        # Citation reference at end: [الفَاتِحة: 1-4] or [الفَاتِحة: 4]
+        # Citation reference at end: [الفَاتِحة: ١-٧] أو [الفَاتِحة: ٢]
         ref_text = None
+        RLE = "\u202B"
+        PDF = "\u202C"
+
         if include_ref:
             sura_name = surah["sura_name_ar"]
-            RLM = "\u200F"
             if from_ayah == to_ayah:
-                ref_text = f"{RLM}[{sura_name}: {RLM}{from_ayah}{RLM}]{RLM}"
+                ref_text = f"[{sura_name}: {to_arabic_indic(from_ayah)}]"
             else:
-                ref_text = f"{RLM}[{sura_name}: {RLM}{from_ayah}-{to_ayah}{RLM}]{RLM}"
+                ref_text = f"[{sura_name}: {to_arabic_indic(from_ayah)}-{to_arabic_indic(to_ayah)}]"
 
         if is_preview and len(ayahs) > max_preview_ayahs:
             preview_verses = [a["aya_text"].strip() for a in ayahs[:3]]
@@ -163,20 +169,20 @@ class QuranDB:
         if include_brackets:
             body_text = f"{OPEN_BRACKET} {body_text} {CLOSE_BRACKET}"
 
-        # Build combined quote line
+        # Build combined quote line with explicit RTL embedding
         quote_parts = []
         if qala_text:
             quote_parts.append(qala_text)
         quote_parts.append(body_text)
         if ref_text:
             quote_parts.append(ref_text)
-        main_line = "\u200F" + " ".join(quote_parts) + "\u200F"
+        main_line = f"{RLE}{' '.join(quote_parts)}{PDF}"
 
         parts = []
         if header_text:
-            parts.append(header_text)
+            parts.append(f"{RLE}{header_text}{PDF}")
         if basmalah_text:
-            parts.append(basmalah_text)
+            parts.append(f"{RLE}{basmalah_text}{PDF}")
         parts.append(main_line)
 
         combined = "\n".join(parts)
