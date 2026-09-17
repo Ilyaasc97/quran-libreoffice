@@ -145,10 +145,13 @@ Sub SurahEvt_itemStateChanged(oEvt As Object)
     oTo = oDialog.getControl("num_to")
     oFrom.getModel().ValueMax = CDbl(maxAyah)
     oTo.getModel().ValueMax = CDbl(maxAyah)
+    Dim defTo As Long
+    defTo = maxAyah
+    If defTo > 5 Then defTo = 5
     oFrom.setValue(1)
-    oTo.setValue(maxAyah)
+    oTo.setValue(defTo)
     g_from_ayah = 1
-    g_to_ayah = maxAyah
+    g_to_ayah = defTo
 
     If sNo = 9 Then
         oDialog.getControl("chk_basmalah").setState(0)

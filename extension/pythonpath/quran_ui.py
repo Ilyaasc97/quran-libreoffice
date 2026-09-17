@@ -73,7 +73,7 @@ class QuranDialogRunner:
         self.search_results = []
         self.dialog = None
 
-    def get_current_payload(self):
+    def get_current_payload(self, is_preview=False):
         surah = self.surahs[self.current_surah_idx]
         num_from = self.dialog.getControl("num_from")
         num_to = self.dialog.getControl("num_to")
@@ -99,7 +99,8 @@ class QuranDialogRunner:
             include_basmalah=b_basmalah,
             include_header=b_header,
             line_per_ayah=b_newline,
-            include_brackets=b_brackets
+            include_brackets=b_brackets,
+            is_preview=is_preview
         )
 
     def on_surah_selected(self, event):
@@ -117,7 +118,8 @@ class QuranDialogRunner:
             num_from.getModel().setPropertyValue("ValueMax", max_ayah)
             num_to.getModel().setPropertyValue("ValueMax", max_ayah)
             num_from.setValue(1.0)
-            num_to.setValue(max_ayah)
+            default_to = min(max_ayah, 5.0)
+            num_to.setValue(default_to)
 
         chk_basmalah = self.dialog.getControl("chk_basmalah")
         if chk_basmalah:
@@ -185,7 +187,7 @@ class QuranDialogRunner:
 
     def update_preview(self, event=None):
         try:
-            payload = self.get_current_payload()
+            payload = self.get_current_payload(is_preview=True)
             txt_preview = self.dialog.getControl("txt_preview")
             if txt_preview and payload:
                 preview_text = payload.get("combined_text", "")
@@ -195,7 +197,7 @@ class QuranDialogRunner:
 
     def on_insert_clicked(self, event):
         try:
-            payload = self.get_current_payload()
+            payload = self.get_current_payload(is_preview=False)
             if not payload:
                 self.show_message("تنبيه", "تعذر تجهيز النص القرآني للإدراج.")
                 return
@@ -223,6 +225,20 @@ class QuranDialogRunner:
         controller = doc.getCurrentController()
         view_cursor = controller.getViewCursor()
         cursor = text.createTextCursorByRange(view_cursor.getStart())
+
+        is_locked = False
+        try:
+            if hasattr(doc, "lockControllers"):
+                try:
+                    doc.lockControllers()
+                    is_locked = True
+                except:
+                    pass
+            if hasattr(doc, "addActionLock"):
+                try:
+                    doc.addActionLock()
+                except:
+                    pass
 
         # 1. Header if present
         if payload.get("header"):
@@ -307,11 +323,22 @@ class QuranDialogRunner:
             cursor.setPropertyValue("CharWeight", 100.0)
             text.insertString(cursor, " " + payload["reference"], False)
 
-        text.insertString(cursor, "\n", False)
+            text.insertString(cursor, "\n", False)
 
-        # Move view cursor to end of insertion
-        view_cursor.gotoRange(cursor.getEnd(), False)
-        return True
+            # Move view cursor to end of insertion
+            view_cursor.gotoRange(cursor.getEnd(), False)
+            return True
+        finally:
+            if hasattr(doc, "removeActionLock"):
+                try:
+                    doc.removeActionLock()
+                except:
+                    pass
+            if is_locked and hasattr(doc, "unlockControllers"):
+                try:
+                    doc.unlockControllers()
+                except:
+                    pass
 
     def show_message(self, title, message):
         try:

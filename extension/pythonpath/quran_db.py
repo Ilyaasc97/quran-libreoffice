@@ -99,7 +99,9 @@ class QuranDB:
                             line_per_ayah=False,
                             include_brackets=True,
                             include_qala=True,
-                            include_ref=True):
+                            include_ref=True,
+                            is_preview=False,
+                            max_preview_ayahs=5):
         """
         Builds formatted sections for insertion matching Islamic academic citation:
         قَالَ تَعَالَى: ﴿ ... ﴾ [اسم السورة: الآيات]
@@ -142,7 +144,13 @@ class QuranDB:
             else:
                 ref_text = f"{RLM}[{sura_name}: {RLM}{from_ayah}-{to_ayah}{RLM}]{RLM}"
 
-        verse_texts = [a["aya_text"].strip() for a in ayahs]
+        if is_preview and len(ayahs) > max_preview_ayahs:
+            preview_verses = [a["aya_text"].strip() for a in ayahs[:3]]
+            preview_verses.append(f"... [تم اختصار المعاينة: إجمالي الآيات المحددة {len(ayahs)} آية] ...")
+            preview_verses.append(ayahs[-1]["aya_text"].strip())
+            verse_texts = preview_verses
+        else:
+            verse_texts = [a["aya_text"].strip() for a in ayahs]
 
         # Authentic King Fahd Complex ornate Quran brackets (KFGQPC):
         # U+FD5F: Opens and embraces text from the right in RTL

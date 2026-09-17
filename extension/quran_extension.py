@@ -161,7 +161,8 @@ class QuranJob(unohelper.Base, XJob, XJobExecutor, XServiceInfo):
                     line_per_ayah=newline,
                     include_brackets=brackets,
                     include_qala=qala,
-                    include_ref=reference
+                    include_ref=reference,
+                    is_preview=True
                 )
                 return payload["combined_text"] if payload else ""
 
@@ -213,94 +214,119 @@ class QuranJob(unohelper.Base, XJob, XJobExecutor, XServiceInfo):
         view_cursor = controller.getViewCursor()
         cursor = text.createTextCursorByRange(view_cursor.getStart())
 
-        # 1. Header if present
-        if payload.get("header"):
-            try:
-                cursor.setPropertyValue("WritingMode", 1)  # RTL
-            except:
-                pass
-            try:
-                from com.sun.star.style.ParagraphAdjust import CENTER
-                cursor.setPropertyValue("ParaAdjust", CENTER)
-            except:
-                pass
-            cursor.setPropertyValue("CharFontNameComplex", "Traditional Arabic")
-            cursor.setPropertyValue("CharFontName", "Traditional Arabic")
-            cursor.setPropertyValue("CharHeightComplex", float(font_size - 2.0))
-            cursor.setPropertyValue("CharHeight", float(font_size - 2.0))
-            cursor.setPropertyValue("CharWeightComplex", 100.0)
-            cursor.setPropertyValue("CharWeight", 100.0)
-            text.insertString(cursor, payload["header"] + "\n", False)
+        is_locked = False
+        try:
+            if hasattr(doc, "lockControllers"):
+                try:
+                    doc.lockControllers()
+                    is_locked = True
+                except:
+                    pass
+            if hasattr(doc, "addActionLock"):
+                try:
+                    doc.addActionLock()
+                except:
+                    pass
 
-        # 2. Basmalah if present
-        if payload.get("basmalah"):
+            # 1. Header if present
+            if payload.get("header"):
+                try:
+                    cursor.setPropertyValue("WritingMode", 1)  # RTL
+                except:
+                    pass
+                try:
+                    from com.sun.star.style.ParagraphAdjust import CENTER
+                    cursor.setPropertyValue("ParaAdjust", CENTER)
+                except:
+                    pass
+                cursor.setPropertyValue("CharFontNameComplex", "Traditional Arabic")
+                cursor.setPropertyValue("CharFontName", "Traditional Arabic")
+                cursor.setPropertyValue("CharHeightComplex", float(font_size - 2.0))
+                cursor.setPropertyValue("CharHeight", float(font_size - 2.0))
+                cursor.setPropertyValue("CharWeightComplex", 100.0)
+                cursor.setPropertyValue("CharWeight", 100.0)
+                text.insertString(cursor, payload["header"] + "\n", False)
+
+            # 2. Basmalah if present
+            if payload.get("basmalah"):
+                try:
+                    cursor.setPropertyValue("WritingMode", 1)  # RTL
+                except:
+                    pass
+                try:
+                    from com.sun.star.style.ParagraphAdjust import CENTER
+                    cursor.setPropertyValue("ParaAdjust", CENTER)
+                except:
+                    pass
+                cursor.setPropertyValue("CharFontNameComplex", font_name)
+                cursor.setPropertyValue("CharFontName", font_name)
+                cursor.setPropertyValue("CharHeightComplex", float(font_size))
+                cursor.setPropertyValue("CharHeight", float(font_size))
+                cursor.setPropertyValue("CharWeightComplex", 100.0)
+                cursor.setPropertyValue("CharWeight", 100.0)
+                text.insertString(cursor, payload["basmalah"] + "\n", False)
+
+            # 3. Main Verse Quote Line (Align Start in RTL, without kashida stretching)
             try:
                 cursor.setPropertyValue("WritingMode", 1)  # RTL
+                from com.sun.star.style.ParagraphAdjust import START
+                cursor.setPropertyValue("ParaAdjust", START)
             except:
-                pass
-            try:
-                from com.sun.star.style.ParagraphAdjust import CENTER
-                cursor.setPropertyValue("ParaAdjust", CENTER)
-            except:
-                pass
+                try:
+                    from com.sun.star.style.ParagraphAdjust import RIGHT
+                    cursor.setPropertyValue("ParaAdjust", RIGHT)
+                except:
+                    pass
+
+            # a) Qala Taala prefix (Traditional Arabic regular, NOT bold)
+            if payload.get("qala_taala"):
+                cursor.setPropertyValue("CharFontNameComplex", "Traditional Arabic")
+                cursor.setPropertyValue("CharFontName", "Traditional Arabic")
+                cursor.setPropertyValue("CharHeightComplex", float(font_size))
+                cursor.setPropertyValue("CharHeight", float(font_size))
+                cursor.setPropertyValue("CharWeightComplex", 100.0)
+                cursor.setPropertyValue("CharWeight", 100.0)
+                text.insertString(cursor, payload["qala_taala"] + " ", False)
+
+            # b) Verses with Uthmanic Font and Ornate Brackets
             cursor.setPropertyValue("CharFontNameComplex", font_name)
             cursor.setPropertyValue("CharFontName", font_name)
             cursor.setPropertyValue("CharHeightComplex", float(font_size))
             cursor.setPropertyValue("CharHeight", float(font_size))
             cursor.setPropertyValue("CharWeightComplex", 100.0)
             cursor.setPropertyValue("CharWeight", 100.0)
-            text.insertString(cursor, payload["basmalah"] + "\n", False)
+            body_to_insert = payload.get("body_text")
+            if not body_to_insert:
+                sep = "\n" if payload.get("line_per_ayah") else " "
+                body_to_insert = sep.join(payload["verses"])
+            text.insertString(cursor, body_to_insert, False)
 
-        # 3. Main Verse Quote Line (Align Start in RTL, without kashida stretching)
-        try:
-            cursor.setPropertyValue("WritingMode", 1)  # RTL
-            from com.sun.star.style.ParagraphAdjust import START
-            cursor.setPropertyValue("ParaAdjust", START)
-        except:
-            try:
-                from com.sun.star.style.ParagraphAdjust import RIGHT
-                cursor.setPropertyValue("ParaAdjust", RIGHT)
-            except:
-                pass
+            # c) Reference citation [الفَاتِحة: 1-4] (Traditional Arabic regular, NOT bold)
+            if payload.get("reference"):
+                cursor.setPropertyValue("CharFontNameComplex", "Traditional Arabic")
+                cursor.setPropertyValue("CharFontName", "Traditional Arabic")
+                cursor.setPropertyValue("CharHeightComplex", float(font_size - 2.0))
+                cursor.setPropertyValue("CharHeight", float(font_size - 2.0))
+                cursor.setPropertyValue("CharWeightComplex", 100.0)
+                cursor.setPropertyValue("CharWeight", 100.0)
+                text.insertString(cursor, " " + payload["reference"], False)
 
-        # a) Qala Taala prefix (Traditional Arabic regular, NOT bold)
-        if payload.get("qala_taala"):
-            cursor.setPropertyValue("CharFontNameComplex", "Traditional Arabic")
-            cursor.setPropertyValue("CharFontName", "Traditional Arabic")
-            cursor.setPropertyValue("CharHeightComplex", float(font_size))
-            cursor.setPropertyValue("CharHeight", float(font_size))
-            cursor.setPropertyValue("CharWeightComplex", 100.0)
-            cursor.setPropertyValue("CharWeight", 100.0)
-            text.insertString(cursor, payload["qala_taala"] + " ", False)
+            text.insertString(cursor, "\n", False)
 
-        # b) Verses with Uthmanic Font and Ornate Brackets
-        cursor.setPropertyValue("CharFontNameComplex", font_name)
-        cursor.setPropertyValue("CharFontName", font_name)
-        cursor.setPropertyValue("CharHeightComplex", float(font_size))
-        cursor.setPropertyValue("CharHeight", float(font_size))
-        cursor.setPropertyValue("CharWeightComplex", 100.0)
-        cursor.setPropertyValue("CharWeight", 100.0)
-        body_to_insert = payload.get("body_text")
-        if not body_to_insert:
-            sep = "\n" if payload.get("line_per_ayah") else " "
-            body_to_insert = sep.join(payload["verses"])
-        text.insertString(cursor, body_to_insert, False)
-
-        # c) Reference citation [الفَاتِحة: 1-4] (Traditional Arabic regular, NOT bold)
-        if payload.get("reference"):
-            cursor.setPropertyValue("CharFontNameComplex", "Traditional Arabic")
-            cursor.setPropertyValue("CharFontName", "Traditional Arabic")
-            cursor.setPropertyValue("CharHeightComplex", float(font_size - 2.0))
-            cursor.setPropertyValue("CharHeight", float(font_size - 2.0))
-            cursor.setPropertyValue("CharWeightComplex", 100.0)
-            cursor.setPropertyValue("CharWeight", 100.0)
-            text.insertString(cursor, " " + payload["reference"], False)
-
-        text.insertString(cursor, "\n", False)
-
-        # Move view cursor to end of insertion
-        view_cursor.gotoRange(cursor.getEnd(), False)
-        return True
+            # Move view cursor to end of insertion
+            view_cursor.gotoRange(cursor.getEnd(), False)
+            return True
+        finally:
+            if hasattr(doc, "removeActionLock"):
+                try:
+                    doc.removeActionLock()
+                except:
+                    pass
+            if is_locked and hasattr(doc, "unlockControllers"):
+                try:
+                    doc.unlockControllers()
+                except:
+                    pass
 
     def show_about_box(self):
         msg = (
